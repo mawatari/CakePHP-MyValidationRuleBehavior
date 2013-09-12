@@ -26,6 +26,12 @@
  *				'message' => '開始日時より後の日時を入力してください。'
  *			]
  *		],
+ * 		'text' => [
+ * 			[
+ * 				'rule' => 'notEmptyMb',
+ * 				'message' => '本文が入力されていません。'
+ * 			]
+ * 		]
  * 	];
  */
 class MyValidationRuleBehavior extends ModelBehavior {
@@ -43,7 +49,7 @@ class MyValidationRuleBehavior extends ModelBehavior {
  * @param string $compare_field Set field name for comparison
  * @return boolean Success
  */
-	public static function comparisonField(Model $model, $check, $operator = null, $compare_field = null) {
+	public function comparisonField(Model $model, $check, $operator = null, $compare_field = null) {
 		$check = current($check);
 		$operator = str_replace(array(' ', "\t", "\n", "\r", "\0", "\x0B"), '', strtolower($operator));
 		$compare_field = isset($model->data[$model->alias][$compare_field]) ? $model->data[$model->alias][$compare_field] : null;
@@ -90,4 +96,28 @@ class MyValidationRuleBehavior extends ModelBehavior {
 		}
 		return false;
 	}
+
+/**
+ * notEmptyの全角スペース対応版
+ * Checks that a string contains something other than whitespace
+ *
+ * Returns true if string contains something other than whitespace
+ *
+ * $check can be passed as an array:
+ * array('check' => 'valueToCheck');
+ *
+ * @param string|array $check Value to check
+ * @return boolean Success
+ */
+	public function notEmptyMb(Model $model, $check) {
+		$check = current($check);
+		if (empty($check) && $check != '0') {
+			return false;
+		}
+		if (preg_match('/[^\s]+/m', mb_convert_kana($check, 's', 'UTF-8'))) {
+			return true;
+		}
+		return false;
+	}
+
 }
